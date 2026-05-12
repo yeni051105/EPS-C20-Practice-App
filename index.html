@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>EPS C20 Practice</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main class="app-shell">
+      <aside class="sidebar" aria-label="Practice controls">
+        <div class="brand-block">
+          <p class="eyebrow">EPS C20</p>
+          <h1>Practice Console</h1>
+        </div>
+
+        <section class="panel">
+          <label for="setFilter">Question set</label>
+          <select id="setFilter">
+            <option value="all">All questions</option>
+            <option value="Actual Quiz & HW Questions">Actual Quiz & HW</option>
+            <option value="Question Bank">Question Bank</option>
+          </select>
+
+          <label for="sourceFilter">Lecture / source</label>
+          <select id="sourceFilter"></select>
+
+          <label for="topicFilter">Topic</label>
+          <select id="topicFilter"></select>
+
+          <div class="switch-row">
+            <span>Shuffle</span>
+            <button class="toggle" id="shuffleToggle" type="button" aria-pressed="true">
+              <span></span>
+            </button>
+          </div>
+
+          <div class="switch-row">
+            <span>Exam mode</span>
+            <button class="toggle" id="examToggle" type="button" aria-pressed="false">
+              <span></span>
+            </button>
+          </div>
+
+          <button class="primary" id="startButton" type="button">Start practice</button>
+        </section>
+
+        <section class="stats panel" aria-label="Session summary">
+          <div>
+            <span id="statTotal">0</span>
+            <small>available</small>
+          </div>
+          <div>
+            <span id="statAnswered">0</span>
+            <small>answered</small>
+          </div>
+          <div>
+            <span id="statScore">0%</span>
+            <small>score</small>
+          </div>
+        </section>
+
+        <section class="panel compact-actions">
+          <button id="missedButton" type="button">Review missed</button>
+          <button id="resetButton" type="button">Reset session</button>
+        </section>
+      </aside>
+
+      <section class="practice-area">
+        <div class="topbar">
+          <div>
+            <p id="questionMeta" class="eyebrow">Ready</p>
+            <h2 id="questionCount">Choose a set to begin</h2>
+          </div>
+          <div class="progress-track" aria-hidden="true">
+            <span id="progressFill"></span>
+          </div>
+        </div>
+
+        <article class="question-card">
+          <div class="question-text" id="questionText">
+            Select filters, then start a practice session.
+          </div>
+          <div class="choices" id="choices"></div>
+          <div class="feedback" id="feedback" hidden></div>
+          <div class="card-actions">
+            <button id="prevButton" type="button">Previous</button>
+            <button id="checkButton" class="primary" type="button">Check answer</button>
+            <button id="nextButton" type="button">Next</button>
+          </div>
+        </article>
+
+        <section class="review-strip" aria-label="Question navigator">
+          <div id="navigator"></div>
+        </section>
+      </section>
+    </main>
+
+    <script src="questions.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
