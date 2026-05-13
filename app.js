@@ -7,9 +7,12 @@
     answered: new Map(),
     shuffle: true,
     examMode: false,
+    mode: "practice",
   };
 
   const els = {
+    practiceModeButton: document.querySelector("#practiceModeButton"),
+    answerModeButton: document.querySelector("#answerModeButton"),
     setFilter: document.querySelector("#setFilter"),
     sourceFilter: document.querySelector("#sourceFilter"),
     topicFilter: document.querySelector("#topicFilter"),
@@ -23,14 +26,21 @@
     statScore: document.querySelector("#statScore"),
     questionMeta: document.querySelector("#questionMeta"),
     questionCount: document.querySelector("#questionCount"),
+    practiceTopbar: document.querySelector("#practiceTopbar"),
     questionText: document.querySelector("#questionText"),
+    questionCard: document.querySelector(".question-card"),
     choices: document.querySelector("#choices"),
     feedback: document.querySelector("#feedback"),
     prevButton: document.querySelector("#prevButton"),
     checkButton: document.querySelector("#checkButton"),
     nextButton: document.querySelector("#nextButton"),
+    reviewStrip: document.querySelector(".review-strip"),
     navigator: document.querySelector("#navigator"),
     progressFill: document.querySelector("#progressFill"),
+    answerKey: document.querySelector("#answerKey"),
+    answerKeyTitle: document.querySelector("#answerKeyTitle"),
+    answerSearch: document.querySelector("#answerSearch"),
+    answerList: document.querySelector("#answerList"),
   };
 
   function uniqueSorted(values) {
@@ -59,6 +69,7 @@
     const topicBase = base.filter((q) => source === "all" || q.source === source);
     populateSelect(els.topicFilter, uniqueSorted(topicBase.map((q) => q.topic)), "All topics");
     updateAvailableCount();
+    renderAnswerKey();
   }
 
   function getFilteredQuestions() {
@@ -92,6 +103,7 @@
       answered: [...state.answered.entries()],
       shuffle: state.shuffle,
       examMode: state.examMode,
+      mode: state.mode,
     };
     localStorage.setItem("eps20PracticeSession", JSON.stringify(data));
   }
@@ -107,6 +119,7 @@
       state.answered = new Map(data.answered || []);
       state.shuffle = data.shuffle !== false;
       state.examMode = data.examMode === true;
+      state.mode = data.mode === "answer" ? "answer" : "practice";
       setToggle(els.shuffleToggle, state.shuffle);
       setToggle(els.examToggle, state.examMode);
       return state.pool.length > 0;
@@ -117,6 +130,7 @@
 
   function updateAvailableCount() {
     els.statTotal.textContent = getFilteredQuestions().length;
+    renderAnswerKey();
   }
 
   function startPractice(questions) {
@@ -144,6 +158,7 @@
   }
 
   function render() {
+    renderMode();
     const q = currentQuestion();
     const stats = answeredStats();
     els.statTotal.textContent = state.pool.length || getFilteredQuestions().length;
@@ -175,6 +190,17 @@
     els.nextButton.disabled = state.index >= state.pool.length - 1;
     els.checkButton.disabled = !state.selected || Boolean(saved);
     renderNavigator();
+    renderAnswerKey();
+  }
+
+  function renderMode() {
+    const isAnswerMode = state.mode === "answer";
+    els.practiceModeButton.classList.toggle("active", !isAnswerMode);
+    els.answerModeButton.classList.toggle("active", isAnswerMode);
+    els.practiceTopbar.hidden = isAnswerMode;
+    els.questionCard.hidden = isAnswerMode;
+    els.reviewStrip.hidden = isAnswerMode;
+    els.answerKey.hidden = !isAnswerMode;
   }
 
   function renderChoices(q, saved) {
@@ -236,6 +262,77 @@
     });
   }
 
+  function renderAnswerKey() {
+    if (!els.answerList) return;
+    const search = (els.answerSearch.value || "").trim().toLowerCase();
+    const questions = getFilteredQuestions().filter((q) => {
+      if (!search) return true;
+      return [
+        q.set,
+        q.source,
+        q.topic,
+        q.question,
+        q.answerRaw,
+        q.explanation,
+        ...q.choices.map((choice) => choice.text),
+      ].join(" ").toLowerCase().includes(search);
+    });
+
+    els.answerKeyTitle.textContent = `${questions.length} question${questions.length === 1 ? "" : "s"} with correct answers`;
+    els.answerList.innerHTML = "";
+
+    if (!questions.length) {
+      const empty = document.createElement("div");
+      empty.className = "empty-state";
+      empty.textContent = "No questions match the current filters.";
+      els.answerList.append(empty);
+      return;
+    }
+
+    questions.forEach((q) => {
+      const article = document.createElement("article");
+      article.className = "answer-item";
+
+      const head = document.createElement("div");
+      head.className = "answer-item-head";
+      [q.set, q.source, q.topic, q.type].filter(Boolean).forEach((label) => {
+        const pill = document.createElement("span");
+        pill.className = "pill";
+        pill.textContent = label;
+        head.append(pill);
+      });
+
+      const question = document.createElement("p");
+      question.className = "answer-question";
+      question.textContent = `${q.number}. ${q.question}`;
+
+      const choices = document.createElement("div");
+      choices.className = "answer-choices";
+      q.choices.forEach((choice) => {
+        const row = document.createElement("div");
+        row.className = "answer-choice";
+        if (choice.letter === q.answer) row.classList.add("correct-answer");
+        const letter = document.createElement("strong");
+        letter.textContent = choice.letter;
+        const text = document.createElement("span");
+        text.textContent = choice.text;
+        row.append(letter, text);
+        choices.append(row);
+      });
+
+      const note = document.createElement("div");
+      note.className = "answer-note";
+      const answer = document.createElement("strong");
+      answer.textContent = `Correct answer: ${q.answerRaw || q.answer}`;
+      const explanation = document.createElement("div");
+      explanation.textContent = q.explanation || "No explanation provided.";
+      note.append(answer, explanation);
+
+      article.append(head, question, choices, note);
+      els.answerList.append(article);
+    });
+  }
+
   function escapeHtml(value) {
     return String(value || "").replace(/[&<>"']/g, (char) => ({
       "&": "&amp;",
@@ -265,6 +362,16 @@
     saveSession();
   }
 
+  els.practiceModeButton.addEventListener("click", () => {
+    state.mode = "practice";
+    render();
+    saveSession();
+  });
+  els.answerModeButton.addEventListener("click", () => {
+    state.mode = "answer";
+    render();
+    saveSession();
+  });
   els.setFilter.addEventListener("change", refreshFilters);
   els.sourceFilter.addEventListener("change", () => {
     const base = filteredBase();
@@ -274,6 +381,7 @@
     updateAvailableCount();
   });
   els.topicFilter.addEventListener("change", updateAvailableCount);
+  els.answerSearch.addEventListener("input", renderAnswerKey);
   els.shuffleToggle.addEventListener("click", () => {
     state.shuffle = !state.shuffle;
     setToggle(els.shuffleToggle, state.shuffle);

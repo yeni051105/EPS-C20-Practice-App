@@ -15,6 +15,11 @@
         </div>
 
         <section class="panel">
+          <div class="mode-tabs" aria-label="View mode">
+            <button class="mode-tab active" id="practiceModeButton" type="button">Practice</button>
+            <button class="mode-tab" id="answerModeButton" type="button">Answer Key</button>
+          </div>
+
           <label for="setFilter">Question set</label>
           <select id="setFilter">
             <option value="all">All questions</option>
@@ -67,7 +72,7 @@
       </aside>
 
       <section class="practice-area">
-        <div class="topbar">
+        <div class="topbar" id="practiceTopbar">
           <div>
             <p id="questionMeta" class="eyebrow">Ready</p>
             <h2 id="questionCount">Choose a set to begin</h2>
@@ -92,6 +97,17 @@
 
         <section class="review-strip" aria-label="Question navigator">
           <div id="navigator"></div>
+        </section>
+
+        <section class="answer-key" id="answerKey" hidden>
+          <div class="answer-key-header">
+            <div>
+              <p class="eyebrow">Answer Key</p>
+              <h2 id="answerKeyTitle">All questions with correct answers</h2>
+            </div>
+            <input id="answerSearch" type="search" placeholder="Search question, topic, answer...">
+          </div>
+          <div class="answer-list" id="answerList"></div>
         </section>
       </section>
     </main>
